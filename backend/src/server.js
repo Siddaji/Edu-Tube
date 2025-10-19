@@ -1,8 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import connectDB from "../src/config/db.js";
-import videoRoutes from "../src/routes/videoRoutes.js";
+import connectDB from "./config/db.js";
+import videoRoutes from "./routes/videoRoutes.js";
 
 dotenv.config();
 const app = express();

@@ -1,4 +1,4 @@
-import VideoList from "./components/VideoList.jsx";
+import VideoList from "./components/VideoList";
 
 function App() {
   return (

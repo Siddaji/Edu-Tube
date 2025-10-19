@@ -4,7 +4,7 @@ export const addVideo = async (req, res) => {
   try {
     const { title, creator, videoUrl, description, category } = req.body;
     if (!title || !creator || !videoUrl) {
-      return res.status(400).json({ message: "Please fill all required fields" });
+      return res.status(400).json({ message: "Please fill title, creator and videoUrl" });
     }
     const video = await Video.create({ title, creator, videoUrl, description, category });
     res.status(201).json(video);
@@ -25,9 +25,7 @@ export const getAllVideos = async (req, res) => {
       const regex = new RegExp(q, "i");
       filter.$or = [{ title: regex }, { creator: regex }, { description: regex }, { category: regex }];
     }
-    if (category) {
-      filter.category = category;
-    }
+    if (category) filter.category = category;
 
     const total = await Video.countDocuments(filter);
     const pages = Math.max(1, Math.ceil(total / limit));
@@ -59,12 +57,8 @@ export const updateVideo = async (req, res) => {
     const updates = req.body || {};
     const allowed = ["title", "creator", "videoUrl", "description", "category"];
     const toUpdate = {};
-    for (const key of allowed) {
-      if (updates[key] !== undefined) toUpdate[key] = updates[key];
-    }
-    if (Object.keys(toUpdate).length === 0) {
-      return res.status(400).json({ message: "No valid fields provided for update" });
-    }
+    for (const key of allowed) if (updates[key] !== undefined) toUpdate[key] = updates[key];
+    if (Object.keys(toUpdate).length === 0) return res.status(400).json({ message: "No valid fields provided" });
     const updated = await Video.findByIdAndUpdate(id, toUpdate, { new: true });
     if (!updated) return res.status(404).json({ message: "Video not found" });
     res.status(200).json(updated);
