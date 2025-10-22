@@ -1,11 +1,15 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import VideoList from "./components/VideoList";
+import VideoDetail from "./components/VideoDetails";
 
 function App() {
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-center mt-4">🎥 EduTube</h1>
-      <VideoList />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<VideoList />} />
+        <Route path="/video/:id" element={<VideoDetail />} />
+      </Routes>
+    </Router>
   );
 }
 
