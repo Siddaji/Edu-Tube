@@ -1,79 +1,66 @@
 import Video from "../models/videoModel.js";
 
+
 export const addVideo = async (req, res) => {
   try {
-    const { title, creator, videoUrl, description, category } = req.body;
-    if (!title || !creator || !videoUrl) {
-      return res.status(400).json({ message: "Please fill title, creator and videoUrl" });
-    }
-    const video = await Video.create({ title, creator, videoUrl, description, category });
-    res.status(201).json(video);
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong", error: error.message });
+    const { title, description, url, thumbnailUrl } = req.body;
+    const newVideo = await Video.create({ title, description, url, thumbnailUrl });
+    res.status(201).json(newVideo);
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 };
 
 export const getAllVideos = async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(Math.max(1, Number(req.query.limit) || 12), 100);
-    const q = req.query.q ? String(req.query.q).trim() : "";
-    const category = req.query.category ? String(req.query.category).trim() : "";
-
+    const { search, category } = req.query;
     const filter = {};
-    if (q) {
-      const regex = new RegExp(q, "i");
-      filter.$or = [{ title: regex }, { creator: regex }, { description: regex }, { category: regex }];
-    }
+
+    if (search) filter.title = { $regex: search, $options: "i" };
     if (category) filter.category = category;
 
-    const total = await Video.countDocuments(filter);
-    const pages = Math.max(1, Math.ceil(total / limit));
-    const videos = await Video.find(filter)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
-
-    res.status(200).json({ data: videos, page, pages, total });
-  } catch (error) {
-    res.status(500).json({ message: "Cannot fetch videos", error: error.message });
+    const videos = await Video.find(filter).sort({ createdAt: -1 });
+    res.json({ data: videos, total: videos.length });
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 };
+
+
 
 export const getVideoById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const video = await Video.findById(id);
+    const video = await Video.findById(req.params.id);
     if (!video) return res.status(404).json({ message: "Video not found" });
-    res.status(200).json(video);
-  } catch (error) {
-    res.status(500).json({ message: "Cannot fetch video", error: error.message });
+    res.json(video);
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 };
+
 
 export const updateVideo = async (req, res) => {
   try {
-    const { id } = req.params;
-    const updates = req.body || {};
-    const allowed = ["title", "creator", "videoUrl", "description", "category"];
-    const toUpdate = {};
-    for (const key of allowed) if (updates[key] !== undefined) toUpdate[key] = updates[key];
-    if (Object.keys(toUpdate).length === 0) return res.status(400).json({ message: "No valid fields provided" });
-    const updated = await Video.findByIdAndUpdate(id, toUpdate, { new: true });
-    if (!updated) return res.status(404).json({ message: "Video not found" });
-    res.status(200).json(updated);
-  } catch (error) {
-    res.status(500).json({ message: "Cannot update video", error: error.message });
+    const { title, description, url, thumbnailUrl } = req.body;
+    const video = await Video.findByIdAndUpdate(
+      req.params.id,
+      { title, description, url, thumbnailUrl },
+      { new: true }
+    );
+    if (!video) return res.status(404).json({ message: "Video not found" });
+    res.json(video);
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 };
 
+
 export const deleteVideo = async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleted = await Video.findByIdAndDelete(id);
-    if (!deleted) return res.status(404).json({ message: "Video not found" });
-    res.status(200).json({ message: "Video deleted" });
-  } catch (error) {
-    res.status(500).json({ message: "Cannot delete video", error: error.message });
+    const video = await Video.findByIdAndDelete(req.params.id);
+    if (!video) return res.status(404).json({ message: "Video not found" });
+    res.json({ message: "Video deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 };

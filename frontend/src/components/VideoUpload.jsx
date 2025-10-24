@@ -5,6 +5,7 @@ function VideoUpload() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
+  const [thumbnail, setThumbnail] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -13,11 +14,11 @@ function VideoUpload() {
       const res = await fetch("http://localhost:3000/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, url }),
+        body: JSON.stringify({ title, description, url, thumbnailUrl: thumbnail }),
       });
       const data = await res.json();
       console.log("Video uploaded:", data);
-      navigate("/"); // go back to video list
+      navigate("/");
     } catch (err) {
       console.error("Error uploading video:", err);
     }
@@ -48,6 +49,14 @@ function VideoUpload() {
           placeholder="Video URL"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          className="border p-2 rounded"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Thumbnail URL"
+          value={thumbnail}
+          onChange={(e) => setThumbnail(e.target.value)}
           className="border p-2 rounded"
           required
         />
